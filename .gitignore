@@ -1,0 +1,10 @@
+﻿# idea ignore
+.idea
+.gradle/
+out/
+
+
+
+
+
+
