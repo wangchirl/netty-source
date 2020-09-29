@@ -21,20 +21,20 @@ import java.net.URI;
  *
  *  HTTP 服务器
  *
- * 1、curl "http://localhost:8080"
+ * 测试：curl "http://localhost:8080"
  */
-public class NettyServer {
+public class NettyServer01 {
 	public static void main(String[] args) {
 		// 事件循环组
 		// bossGroup 接收连接不处理请求，将请求转发给 workGroup
-		EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+		EventLoopGroup bossGroup = new NioEventLoopGroup(1);// 多线程模式
 		EventLoopGroup workGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
 
 		// 服务端启动器
 		ServerBootstrap serverBootstrap = new ServerBootstrap();
 		serverBootstrap.group(bossGroup, workGroup)
 				.channel(NioServerSocketChannel.class)
-				.childHandler(new MyChannelInitializer()); // 通道初始化器
+				.childHandler(new MyNettyServer01ChannelInitializer()); // 通道初始化器
 
 		try {
 			// 绑定ip端口
@@ -49,7 +49,7 @@ public class NettyServer {
 		}
 	}
 
-	static class MyChannelInitializer extends ChannelInitializer<SocketChannel> {
+	static class MyNettyServer01ChannelInitializer extends ChannelInitializer<SocketChannel> {
 
 		@Override
 		protected void initChannel(SocketChannel ch) throws Exception {
@@ -60,12 +60,12 @@ public class NettyServer {
 					.addLast("stringDec",new StringDecoder())
 					.addLast(new StringEncoder())
 						// 业务处理 handler
-					.addLast("httpHandler",new MyChannelInBuoundHandler());
+					.addLast("httpHandler",new MyNettyServer01ChannelInBuoundHandler());
 		}
 	}
 
 	// ChannelInboundHandlerAdapter 子类  SimpleChannelInboundHandler
-	static class MyChannelInBuoundHandler extends SimpleChannelInboundHandler<HttpObject> {
+	static class MyNettyServer01ChannelInBuoundHandler extends SimpleChannelInboundHandler<HttpObject> {
 
 		@Override
 		protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
