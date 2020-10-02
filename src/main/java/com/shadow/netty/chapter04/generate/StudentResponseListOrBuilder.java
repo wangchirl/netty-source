@@ -10,12 +10,12 @@ public interface StudentResponseListOrBuilder extends
   /**
    * <code>repeated .com.shadow.netty.chapter04.generate.StudentResponse studentResponse = 1;</code>
    */
-  java.util.List<StudentResponse>
+  java.util.List<com.shadow.netty.chapter04.generate.StudentResponse> 
       getStudentResponseList();
   /**
    * <code>repeated .com.shadow.netty.chapter04.generate.StudentResponse studentResponse = 1;</code>
    */
-  StudentResponse getStudentResponse(int index);
+  com.shadow.netty.chapter04.generate.StudentResponse getStudentResponse(int index);
   /**
    * <code>repeated .com.shadow.netty.chapter04.generate.StudentResponse studentResponse = 1;</code>
    */
@@ -23,11 +23,11 @@ public interface StudentResponseListOrBuilder extends
   /**
    * <code>repeated .com.shadow.netty.chapter04.generate.StudentResponse studentResponse = 1;</code>
    */
-  java.util.List<? extends StudentResponseOrBuilder>
+  java.util.List<? extends com.shadow.netty.chapter04.generate.StudentResponseOrBuilder> 
       getStudentResponseOrBuilderList();
   /**
    * <code>repeated .com.shadow.netty.chapter04.generate.StudentResponse studentResponse = 1;</code>
    */
-  StudentResponseOrBuilder getStudentResponseOrBuilder(
-		  int index);
+  com.shadow.netty.chapter04.generate.StudentResponseOrBuilder getStudentResponseOrBuilder(
+      int index);
 }

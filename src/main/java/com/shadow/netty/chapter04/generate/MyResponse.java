@@ -18,7 +18,7 @@ public  final class MyResponse extends
     realname_ = "";
   }
 
-  @Override
+  @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet
   getUnknownFields() {
     return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -44,7 +44,7 @@ public  final class MyResponse extends
             break;
           }
           case 18: {
-            String s = input.readStringRequireUtf8();
+            java.lang.String s = input.readStringRequireUtf8();
 
             realname_ = s;
             break;
@@ -65,26 +65,26 @@ public  final class MyResponse extends
     return com.shadow.netty.chapter04.generate.StudentProto.internal_static_com_shadow_netty_chapter04_generate_MyResponse_descriptor;
   }
 
-  protected FieldAccessorTable
+  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.shadow.netty.chapter04.generate.StudentProto.internal_static_com_shadow_netty_chapter04_generate_MyResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            MyResponse.class, Builder.class);
+            com.shadow.netty.chapter04.generate.MyResponse.class, com.shadow.netty.chapter04.generate.MyResponse.Builder.class);
   }
 
   public static final int REALNAME_FIELD_NUMBER = 2;
-  private volatile Object realname_;
+  private volatile java.lang.Object realname_;
   /**
    * <code>string realname = 2;</code>
    */
-  public String getRealname() {
-    Object ref = realname_;
-    if (ref instanceof String) {
-      return (String) ref;
+  public java.lang.String getRealname() {
+    java.lang.Object ref = realname_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
-      String s = bs.toStringUtf8();
+      java.lang.String s = bs.toStringUtf8();
       realname_ = s;
       return s;
     }
@@ -94,11 +94,11 @@ public  final class MyResponse extends
    */
   public com.google.protobuf.ByteString
       getRealnameBytes() {
-    Object ref = realname_;
-    if (ref instanceof String) {
+    java.lang.Object ref = realname_;
+    if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
-              (String) ref);
+              (java.lang.String) ref);
       realname_ = b;
       return b;
     } else {
@@ -136,15 +136,15 @@ public  final class MyResponse extends
   }
 
   private static final long serialVersionUID = 0L;
-  @Override
-  public boolean equals(final Object obj) {
+  @java.lang.Override
+  public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof MyResponse)) {
+    if (!(obj instanceof com.shadow.netty.chapter04.generate.MyResponse)) {
       return super.equals(obj);
     }
-    MyResponse other = (MyResponse) obj;
+    com.shadow.netty.chapter04.generate.MyResponse other = (com.shadow.netty.chapter04.generate.MyResponse) obj;
 
     boolean result = true;
     result = result && getRealname()
@@ -152,7 +152,7 @@ public  final class MyResponse extends
     return result;
   }
 
-  @Override
+  @java.lang.Override
   public int hashCode() {
     if (memoizedHashCode != 0) {
       return memoizedHashCode;
@@ -166,58 +166,58 @@ public  final class MyResponse extends
     return hash;
   }
 
-  public static MyResponse parseFrom(
+  public static com.shadow.netty.chapter04.generate.MyResponse parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static MyResponse parseFrom(
+  public static com.shadow.netty.chapter04.generate.MyResponse parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static MyResponse parseFrom(byte[] data)
+  public static com.shadow.netty.chapter04.generate.MyResponse parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static MyResponse parseFrom(
+  public static com.shadow.netty.chapter04.generate.MyResponse parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static MyResponse parseFrom(java.io.InputStream input)
+  public static com.shadow.netty.chapter04.generate.MyResponse parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static MyResponse parseFrom(
+  public static com.shadow.netty.chapter04.generate.MyResponse parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static MyResponse parseDelimitedFrom(java.io.InputStream input)
+  public static com.shadow.netty.chapter04.generate.MyResponse parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static MyResponse parseDelimitedFrom(
+  public static com.shadow.netty.chapter04.generate.MyResponse parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static MyResponse parseFrom(
+  public static com.shadow.netty.chapter04.generate.MyResponse parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static MyResponse parseFrom(
+  public static com.shadow.netty.chapter04.generate.MyResponse parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -229,7 +229,7 @@ public  final class MyResponse extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(MyResponse prototype) {
+  public static Builder newBuilder(com.shadow.netty.chapter04.generate.MyResponse prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -237,9 +237,9 @@ public  final class MyResponse extends
         ? new Builder() : new Builder().mergeFrom(this);
   }
 
-  @Override
+  @java.lang.Override
   protected Builder newBuilderForType(
-      BuilderParent parent) {
+      com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -255,11 +255,11 @@ public  final class MyResponse extends
       return com.shadow.netty.chapter04.generate.StudentProto.internal_static_com_shadow_netty_chapter04_generate_MyResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.shadow.netty.chapter04.generate.StudentProto.internal_static_com_shadow_netty_chapter04_generate_MyResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              MyResponse.class, Builder.class);
+              com.shadow.netty.chapter04.generate.MyResponse.class, com.shadow.netty.chapter04.generate.MyResponse.Builder.class);
     }
 
     // Construct using com.shadow.netty.chapter04.generate.MyResponse.newBuilder()
@@ -268,7 +268,7 @@ public  final class MyResponse extends
     }
 
     private Builder(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -289,20 +289,20 @@ public  final class MyResponse extends
       return com.shadow.netty.chapter04.generate.StudentProto.internal_static_com_shadow_netty_chapter04_generate_MyResponse_descriptor;
     }
 
-    public MyResponse getDefaultInstanceForType() {
-      return MyResponse.getDefaultInstance();
+    public com.shadow.netty.chapter04.generate.MyResponse getDefaultInstanceForType() {
+      return com.shadow.netty.chapter04.generate.MyResponse.getDefaultInstance();
     }
 
-    public MyResponse build() {
-      MyResponse result = buildPartial();
+    public com.shadow.netty.chapter04.generate.MyResponse build() {
+      com.shadow.netty.chapter04.generate.MyResponse result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public MyResponse buildPartial() {
-      MyResponse result = new MyResponse(this);
+    public com.shadow.netty.chapter04.generate.MyResponse buildPartial() {
+      com.shadow.netty.chapter04.generate.MyResponse result = new com.shadow.netty.chapter04.generate.MyResponse(this);
       result.realname_ = realname_;
       onBuilt();
       return result;
@@ -335,16 +335,16 @@ public  final class MyResponse extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof MyResponse) {
-        return mergeFrom((MyResponse)other);
+      if (other instanceof com.shadow.netty.chapter04.generate.MyResponse) {
+        return mergeFrom((com.shadow.netty.chapter04.generate.MyResponse)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(MyResponse other) {
-      if (other == MyResponse.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.shadow.netty.chapter04.generate.MyResponse other) {
+      if (other == com.shadow.netty.chapter04.generate.MyResponse.getDefaultInstance()) return this;
       if (!other.getRealname().isEmpty()) {
         realname_ = other.realname_;
         onChanged();
@@ -361,11 +361,11 @@ public  final class MyResponse extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      MyResponse parsedMessage = null;
+      com.shadow.netty.chapter04.generate.MyResponse parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (MyResponse) e.getUnfinishedMessage();
+        parsedMessage = (com.shadow.netty.chapter04.generate.MyResponse) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -375,20 +375,20 @@ public  final class MyResponse extends
       return this;
     }
 
-    private Object realname_ = "";
+    private java.lang.Object realname_ = "";
     /**
      * <code>string realname = 2;</code>
      */
-    public String getRealname() {
-      Object ref = realname_;
-      if (!(ref instanceof String)) {
+    public java.lang.String getRealname() {
+      java.lang.Object ref = realname_;
+      if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         realname_ = s;
         return s;
       } else {
-        return (String) ref;
+        return (java.lang.String) ref;
       }
     }
     /**
@@ -396,11 +396,11 @@ public  final class MyResponse extends
      */
     public com.google.protobuf.ByteString
         getRealnameBytes() {
-      Object ref = realname_;
+      java.lang.Object ref = realname_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         realname_ = b;
         return b;
       } else {
@@ -411,7 +411,7 @@ public  final class MyResponse extends
      * <code>string realname = 2;</code>
      */
     public Builder setRealname(
-        String value) {
+        java.lang.String value) {
       if (value == null) {
     throw new NullPointerException();
   }
@@ -458,12 +458,12 @@ public  final class MyResponse extends
   }
 
   // @@protoc_insertion_point(class_scope:com.shadow.netty.chapter04.generate.MyResponse)
-  private static final MyResponse DEFAULT_INSTANCE;
+  private static final com.shadow.netty.chapter04.generate.MyResponse DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new MyResponse();
+    DEFAULT_INSTANCE = new com.shadow.netty.chapter04.generate.MyResponse();
   }
 
-  public static MyResponse getDefaultInstance() {
+  public static com.shadow.netty.chapter04.generate.MyResponse getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -481,12 +481,12 @@ public  final class MyResponse extends
     return PARSER;
   }
 
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Parser<MyResponse> getParserForType() {
     return PARSER;
   }
 
-  public MyResponse getDefaultInstanceForType() {
+  public com.shadow.netty.chapter04.generate.MyResponse getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

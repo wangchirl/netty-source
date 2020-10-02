@@ -20,9 +20,15 @@ protobuf {
             artifact = 'io.grpc:protoc-gen-grpc-java:1.4.0'
         }
     }
+    // 修改生成文件的存放位置
+    generatedFilesBaseDir = "$projectDir/src"
+
     generateProtoTasks {
         all()*.plugins {
-            grpc {}
+            grpc {
+                // 修改 另外一个文件的生成位置
+                setOutputSubDir "java"
+            }
         }
     }
 }

@@ -109,8 +109,8 @@ public class ProtoBufTest {
      
    2、如何使其支持多数据类型进行处理？
      
-   ①、自定义协议（Netty官方示例）
-   ②、规范IDL消息定义方式（消息枚举）oneof 的使用
+    ①、自定义协议（Netty官方示例）
+    ②、规范IDL消息定义方式（消息枚举）oneof 的使用
    ```java
 syntax = "proto2";
 
@@ -152,6 +152,7 @@ message Cat {
 ```
 
    3. 关于如何对生成的java文件共享
+   
     ① jar包（带版本）
     ② git subtree
     ③ git submodule（不怎么使用）
@@ -159,31 +160,35 @@ message Cat {
 
 ## chapter03 - Apache thrift
 ### 1.[官网](http://thrift.apache.org/)
-   1、下载 exe 文件，添加到 path
-   2、执行命令 thrift --gen java data.thrift
-   3、引入依赖包  compile 'org.apache.thrift:libthrift:0.13.0'
+
+    1、下载 exe 文件，添加到 path
+    2、执行命令 thrift --gen java data.thrift
+    3、引入依赖包  compile 'org.apache.thrift:libthrift:0.13.0'
     
   ![Thrift架构图](./thrift.png)
   
   Thrift 传输格式：
-   1、TBinaryProtocol ：二进制格式 *
-   2、TCompactProtocol ：压缩格式 *
-   3、TJSONProtocol ： JSON格式
-   4、TSimpleJSONProtocol ： 提供JSON只写协议，生成的文件很容易通过脚本语言解析，极少使用
-   5、TDebugProtocol ： 使用易懂的可读的文本格式，以便于debug
+  
+    1、TBinaryProtocol ：二进制格式 *
+    2、TCompactProtocol ：压缩格式 *
+    3、TJSONProtocol ： JSON格式
+    4、TSimpleJSONProtocol ： 提供JSON只写协议，生成的文件很容易通过脚本语言解析，极少使用
+    5、TDebugProtocol ： 使用易懂的可读的文本格式，以便于debug
 
   Thrift 数据传输方式：
-   1、TSocket ： 阻塞式 socket 较少使用
-   2、TFramedTransport ： 以 frame为单位解析传输，非阻塞式服务中使用 *
-   3、TFileTransport ： 以文件形式解析传输
-   4、TMemoryTransport ： 将内存用于I/O，Java实现时内部实际使用了简单的 ByteArrayOutputStream
-   5、TZlibTransport ： 使用zlib进行压缩，与其他传输方式联合使用，当前无Java实现
+  
+    1、TSocket ： 阻塞式 socket 较少使用
+    2、TFramedTransport ： 以 frame为单位解析传输，非阻塞式服务中使用 *
+    3、TFileTransport ： 以文件形式解析传输
+    4、TMemoryTransport ： 将内存用于I/O，Java实现时内部实际使用了简单的 ByteArrayOutputStream
+    5、TZlibTransport ： 使用zlib进行压缩，与其他传输方式联合使用，当前无Java实现
 
   Thrift 支持的服务模型：
-   1、TSimpleServer ： 简单的单线程服务模型，常用于测试
-   2、TThreadPoolServer ： 多线程服务模型，使用标准的阻塞式IO
-   3、TNonblockingServer ：多线程服务模型，使用费阻塞式IO（需使用TFramedTransport数据传输方式）
-   4、THsHaSerer ：THsHa引入了线程池去处理，其模型把读写任务放到线程池去处理；Half-sync/Half-async的处理模式
+  
+    1、TSimpleServer ： 简单的单线程服务模型，常用于测试
+    2、TThreadPoolServer ： 多线程服务模型，使用标准的阻塞式IO
+    3、TNonblockingServer ：多线程服务模型，使用费阻塞式IO（需使用TFramedTransport数据传输方式）
+    4、THsHaSerer ：THsHa引入了线程池去处理，其模型把读写任务放到线程池去处理；Half-sync/Half-async的处理模式
                   Half-async是在处理IO事件上（accept/read/write IO），Half-sync用于handler对rpc的同步处理
                   
       

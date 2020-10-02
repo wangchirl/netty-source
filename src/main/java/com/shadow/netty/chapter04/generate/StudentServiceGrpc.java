@@ -28,52 +28,52 @@ public final class StudentServiceGrpc {
 
   // Static method descriptors that strictly reflect the proto.
   @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  public static final io.grpc.MethodDescriptor<MyRequest,
-      MyResponse> METHOD_GET_REAL_NAME_BY_USERNAME =
-      io.grpc.MethodDescriptor.<MyRequest, MyResponse>newBuilder()
+  public static final io.grpc.MethodDescriptor<com.shadow.netty.chapter04.generate.MyRequest,
+      com.shadow.netty.chapter04.generate.MyResponse> METHOD_GET_REAL_NAME_BY_USERNAME =
+      io.grpc.MethodDescriptor.<com.shadow.netty.chapter04.generate.MyRequest, com.shadow.netty.chapter04.generate.MyResponse>newBuilder()
           .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
           .setFullMethodName(generateFullMethodName(
               "com.shadow.netty.chapter04.generate.StudentService", "GetRealNameByUsername"))
           .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-              MyRequest.getDefaultInstance()))
+              com.shadow.netty.chapter04.generate.MyRequest.getDefaultInstance()))
           .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-              MyResponse.getDefaultInstance()))
+              com.shadow.netty.chapter04.generate.MyResponse.getDefaultInstance()))
           .build();
   @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  public static final io.grpc.MethodDescriptor<StudentRequest,
-      StudentResponse> METHOD_GET_STUDENT_BY_AGE =
-      io.grpc.MethodDescriptor.<StudentRequest, StudentResponse>newBuilder()
+  public static final io.grpc.MethodDescriptor<com.shadow.netty.chapter04.generate.StudentRequest,
+      com.shadow.netty.chapter04.generate.StudentResponse> METHOD_GET_STUDENT_BY_AGE =
+      io.grpc.MethodDescriptor.<com.shadow.netty.chapter04.generate.StudentRequest, com.shadow.netty.chapter04.generate.StudentResponse>newBuilder()
           .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
           .setFullMethodName(generateFullMethodName(
               "com.shadow.netty.chapter04.generate.StudentService", "GetStudentByAge"))
           .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-              StudentRequest.getDefaultInstance()))
+              com.shadow.netty.chapter04.generate.StudentRequest.getDefaultInstance()))
           .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-              StudentResponse.getDefaultInstance()))
+              com.shadow.netty.chapter04.generate.StudentResponse.getDefaultInstance()))
           .build();
   @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  public static final io.grpc.MethodDescriptor<StudentRequest,
-      StudentResponseList> METHOD_GET_STUDENT_WRAPPER_BY_AGES =
-      io.grpc.MethodDescriptor.<StudentRequest, StudentResponseList>newBuilder()
+  public static final io.grpc.MethodDescriptor<com.shadow.netty.chapter04.generate.StudentRequest,
+      com.shadow.netty.chapter04.generate.StudentResponseList> METHOD_GET_STUDENT_WRAPPER_BY_AGES =
+      io.grpc.MethodDescriptor.<com.shadow.netty.chapter04.generate.StudentRequest, com.shadow.netty.chapter04.generate.StudentResponseList>newBuilder()
           .setType(io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING)
           .setFullMethodName(generateFullMethodName(
               "com.shadow.netty.chapter04.generate.StudentService", "GetStudentWrapperByAges"))
           .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-              StudentRequest.getDefaultInstance()))
+              com.shadow.netty.chapter04.generate.StudentRequest.getDefaultInstance()))
           .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-              StudentResponseList.getDefaultInstance()))
+              com.shadow.netty.chapter04.generate.StudentResponseList.getDefaultInstance()))
           .build();
   @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-  public static final io.grpc.MethodDescriptor<StreamRequest,
-      StreamResponse> METHOD_BI_TALK =
-      io.grpc.MethodDescriptor.<StreamRequest, StreamResponse>newBuilder()
+  public static final io.grpc.MethodDescriptor<com.shadow.netty.chapter04.generate.StreamRequest,
+      com.shadow.netty.chapter04.generate.StreamResponse> METHOD_BI_TALK =
+      io.grpc.MethodDescriptor.<com.shadow.netty.chapter04.generate.StreamRequest, com.shadow.netty.chapter04.generate.StreamResponse>newBuilder()
           .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
           .setFullMethodName(generateFullMethodName(
               "com.shadow.netty.chapter04.generate.StudentService", "BiTalk"))
           .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-              StreamRequest.getDefaultInstance()))
+              com.shadow.netty.chapter04.generate.StreamRequest.getDefaultInstance()))
           .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-              StreamResponse.getDefaultInstance()))
+              com.shadow.netty.chapter04.generate.StreamResponse.getDefaultInstance()))
           .build();
 
   /**
@@ -105,61 +105,61 @@ public final class StudentServiceGrpc {
 
     /**
      */
-    public void getRealNameByUsername(MyRequest request,
-        io.grpc.stub.StreamObserver<MyResponse> responseObserver) {
+    public void getRealNameByUsername(com.shadow.netty.chapter04.generate.MyRequest request,
+        io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.MyResponse> responseObserver) {
       asyncUnimplementedUnaryCall(METHOD_GET_REAL_NAME_BY_USERNAME, responseObserver);
     }
 
     /**
      */
-    public void getStudentByAge(StudentRequest request,
-        io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
+    public void getStudentByAge(com.shadow.netty.chapter04.generate.StudentRequest request,
+        io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StudentResponse> responseObserver) {
       asyncUnimplementedUnaryCall(METHOD_GET_STUDENT_BY_AGE, responseObserver);
     }
 
     /**
      */
-    public io.grpc.stub.StreamObserver<StudentRequest> getStudentWrapperByAges(
-        io.grpc.stub.StreamObserver<StudentResponseList> responseObserver) {
+    public io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StudentRequest> getStudentWrapperByAges(
+        io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StudentResponseList> responseObserver) {
       return asyncUnimplementedStreamingCall(METHOD_GET_STUDENT_WRAPPER_BY_AGES, responseObserver);
     }
 
     /**
      */
-    public io.grpc.stub.StreamObserver<StreamRequest> biTalk(
-        io.grpc.stub.StreamObserver<StreamResponse> responseObserver) {
+    public io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StreamRequest> biTalk(
+        io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StreamResponse> responseObserver) {
       return asyncUnimplementedStreamingCall(METHOD_BI_TALK, responseObserver);
     }
 
-    @Override public final io.grpc.ServerServiceDefinition bindService() {
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             METHOD_GET_REAL_NAME_BY_USERNAME,
             asyncUnaryCall(
               new MethodHandlers<
-                MyRequest,
-                MyResponse>(
+                com.shadow.netty.chapter04.generate.MyRequest,
+                com.shadow.netty.chapter04.generate.MyResponse>(
                   this, METHODID_GET_REAL_NAME_BY_USERNAME)))
           .addMethod(
             METHOD_GET_STUDENT_BY_AGE,
             asyncServerStreamingCall(
               new MethodHandlers<
-                StudentRequest,
-                StudentResponse>(
+                com.shadow.netty.chapter04.generate.StudentRequest,
+                com.shadow.netty.chapter04.generate.StudentResponse>(
                   this, METHODID_GET_STUDENT_BY_AGE)))
           .addMethod(
             METHOD_GET_STUDENT_WRAPPER_BY_AGES,
             asyncClientStreamingCall(
               new MethodHandlers<
-                StudentRequest,
-                StudentResponseList>(
+                com.shadow.netty.chapter04.generate.StudentRequest,
+                com.shadow.netty.chapter04.generate.StudentResponseList>(
                   this, METHODID_GET_STUDENT_WRAPPER_BY_AGES)))
           .addMethod(
             METHOD_BI_TALK,
             asyncBidiStreamingCall(
               new MethodHandlers<
-                StreamRequest,
-                StreamResponse>(
+                com.shadow.netty.chapter04.generate.StreamRequest,
+                com.shadow.netty.chapter04.generate.StreamResponse>(
                   this, METHODID_BI_TALK)))
           .build();
     }
@@ -177,7 +177,7 @@ public final class StudentServiceGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected StudentServiceStub build(io.grpc.Channel channel,
         io.grpc.CallOptions callOptions) {
       return new StudentServiceStub(channel, callOptions);
@@ -185,32 +185,32 @@ public final class StudentServiceGrpc {
 
     /**
      */
-    public void getRealNameByUsername(MyRequest request,
-        io.grpc.stub.StreamObserver<MyResponse> responseObserver) {
+    public void getRealNameByUsername(com.shadow.netty.chapter04.generate.MyRequest request,
+        io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.MyResponse> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(METHOD_GET_REAL_NAME_BY_USERNAME, getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void getStudentByAge(StudentRequest request,
-        io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
+    public void getStudentByAge(com.shadow.netty.chapter04.generate.StudentRequest request,
+        io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StudentResponse> responseObserver) {
       asyncServerStreamingCall(
           getChannel().newCall(METHOD_GET_STUDENT_BY_AGE, getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public io.grpc.stub.StreamObserver<StudentRequest> getStudentWrapperByAges(
-        io.grpc.stub.StreamObserver<StudentResponseList> responseObserver) {
+    public io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StudentRequest> getStudentWrapperByAges(
+        io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StudentResponseList> responseObserver) {
       return asyncClientStreamingCall(
           getChannel().newCall(METHOD_GET_STUDENT_WRAPPER_BY_AGES, getCallOptions()), responseObserver);
     }
 
     /**
      */
-    public io.grpc.stub.StreamObserver<StreamRequest> biTalk(
-        io.grpc.stub.StreamObserver<StreamResponse> responseObserver) {
+    public io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StreamRequest> biTalk(
+        io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StreamResponse> responseObserver) {
       return asyncBidiStreamingCall(
           getChannel().newCall(METHOD_BI_TALK, getCallOptions()), responseObserver);
     }
@@ -228,7 +228,7 @@ public final class StudentServiceGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected StudentServiceBlockingStub build(io.grpc.Channel channel,
         io.grpc.CallOptions callOptions) {
       return new StudentServiceBlockingStub(channel, callOptions);
@@ -236,15 +236,15 @@ public final class StudentServiceGrpc {
 
     /**
      */
-    public MyResponse getRealNameByUsername(MyRequest request) {
+    public com.shadow.netty.chapter04.generate.MyResponse getRealNameByUsername(com.shadow.netty.chapter04.generate.MyRequest request) {
       return blockingUnaryCall(
           getChannel(), METHOD_GET_REAL_NAME_BY_USERNAME, getCallOptions(), request);
     }
 
     /**
      */
-    public java.util.Iterator<StudentResponse> getStudentByAge(
-        StudentRequest request) {
+    public java.util.Iterator<com.shadow.netty.chapter04.generate.StudentResponse> getStudentByAge(
+        com.shadow.netty.chapter04.generate.StudentRequest request) {
       return blockingServerStreamingCall(
           getChannel(), METHOD_GET_STUDENT_BY_AGE, getCallOptions(), request);
     }
@@ -262,7 +262,7 @@ public final class StudentServiceGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected StudentServiceFutureStub build(io.grpc.Channel channel,
         io.grpc.CallOptions callOptions) {
       return new StudentServiceFutureStub(channel, callOptions);
@@ -270,8 +270,8 @@ public final class StudentServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<MyResponse> getRealNameByUsername(
-        MyRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.shadow.netty.chapter04.generate.MyResponse> getRealNameByUsername(
+        com.shadow.netty.chapter04.generate.MyRequest request) {
       return futureUnaryCall(
           getChannel().newCall(METHOD_GET_REAL_NAME_BY_USERNAME, getCallOptions()), request);
     }
@@ -295,34 +295,34 @@ public final class StudentServiceGrpc {
       this.methodId = methodId;
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_GET_REAL_NAME_BY_USERNAME:
-          serviceImpl.getRealNameByUsername((MyRequest) request,
-              (io.grpc.stub.StreamObserver<MyResponse>) responseObserver);
+          serviceImpl.getRealNameByUsername((com.shadow.netty.chapter04.generate.MyRequest) request,
+              (io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.MyResponse>) responseObserver);
           break;
         case METHODID_GET_STUDENT_BY_AGE:
-          serviceImpl.getStudentByAge((StudentRequest) request,
-              (io.grpc.stub.StreamObserver<StudentResponse>) responseObserver);
+          serviceImpl.getStudentByAge((com.shadow.netty.chapter04.generate.StudentRequest) request,
+              (io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StudentResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
       }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_GET_STUDENT_WRAPPER_BY_AGES:
           return (io.grpc.stub.StreamObserver<Req>) serviceImpl.getStudentWrapperByAges(
-              (io.grpc.stub.StreamObserver<StudentResponseList>) responseObserver);
+              (io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StudentResponseList>) responseObserver);
         case METHODID_BI_TALK:
           return (io.grpc.stub.StreamObserver<Req>) serviceImpl.biTalk(
-              (io.grpc.stub.StreamObserver<StreamResponse>) responseObserver);
+              (io.grpc.stub.StreamObserver<com.shadow.netty.chapter04.generate.StreamResponse>) responseObserver);
         default:
           throw new AssertionError();
       }
@@ -330,9 +330,9 @@ public final class StudentServiceGrpc {
   }
 
   private static final class StudentServiceDescriptorSupplier implements io.grpc.protobuf.ProtoFileDescriptorSupplier {
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return StudentProto.getDescriptor();
+      return com.shadow.netty.chapter04.generate.StudentProto.getDescriptor();
     }
   }
 
