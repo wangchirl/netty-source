@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket客户端</title>
+</head>
+<body>
+
+<script>
+
+    var ws;
+    if(window.WebSocket) {
+        ws = new WebSocket("ws://localhost:8090/ws");
+    }else {
+        console.log("客户端不支持WS");
+    }
+
+    ws.onmessage = function (event) {
+        var serverMsg = document.getElementById("serverMsg");
+        serverMsg.value = serverMsg.value + "\n" + event.data;
+    }
+    ws.onopen = function (event) {
+        var serverMsg = document.getElementById("serverMsg");
+        serverMsg.innerText = "连接建立";
+    }
+
+    ws.onclose = function (event) {
+        var serverMsg = document.getElementById("serverMsg");
+        serverMsg.value = serverMsg.value + "\n" + "连接断开";
+    }
+
+    function send() {
+        if(!window.WebSocket){
+            return;
+        }
+        if(ws.readyState == WebSocket.OPEN) {
+            var msg = document.getElementsByName("message")[0];
+            ws.send(msg.value)
+        }else {
+            console.log("连接未建立");
+        }
+    }
+
+</script>
+
+<div>
+
+    <form onsubmit="return false;">
+        <textarea name="message" style="width: 400px;height: 200px">
+        </textarea>
+
+        <input type="button" value="发送消息" onclick="send()"/>
+
+        <h3>服务端输出：</h3>
+
+        <textarea id="serverMsg" style="width: 400px;height: 200px;"></textarea>
+
+        <input type="button" onclick="javascript:document.getElementById('serverMsg').value = ''" value="清空记录"/>
+    </form>
+
+</div>
+
+</body>
+</html>

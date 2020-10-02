@@ -1,19 +1,47 @@
+plugins {
+    id 'java'
+    id 'com.google.protobuf' version '0.8.1'
+}
+
 group 'com.shadow.netty-source'
 version '1.0-SNAPSHOT'
-
-apply plugin: 'java'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.2.0"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.4.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
 repositories {
     maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
     mavenLocal()
     mavenCentral()
 }
 
+
 dependencies {
     compile (
             "io.netty:netty-all:4.1.42.Final"
     )
+    compile 'com.google.protobuf:protobuf-java:3.11.0'
+    compile 'com.google.protobuf:protobuf-java-util:3.11.0'
+    compile 'org.apache.thrift:libthrift:0.13.0'
+    implementation 'io.grpc:grpc-netty-shaded:1.32.1'
+    implementation 'io.grpc:grpc-protobuf:1.32.1'
+    implementation 'io.grpc:grpc-stub:1.32.1'
+
 }
