@@ -1,30 +1,369 @@
 ## Chapter01 - Netty简单使用
 ### 1.初识 Netty 服务端编码
+```java
+/**
+ * @author shadow
+ * @create 2020-09-28
+ * @description
+ *
+ *  HTTP 服务器
+ *
+ * 测试：curl "http://localhost:8080"
+ */
+public class NettyServer01 {
+	public static void main(String[] args) {
+		// 事件循环组
+		// bossGroup 接收连接不处理请求，将请求转发给 workGroup
+		EventLoopGroup bossGroup = new NioEventLoopGroup(1);// 多线程模式
+		EventLoopGroup workGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
 
+		// 服务端启动器
+		ServerBootstrap serverBootstrap = new ServerBootstrap();
+		serverBootstrap.group(bossGroup, workGroup)
+				.channel(NioServerSocketChannel.class)
+				.childHandler(new MyNettyServer01ChannelInitializer()); // 通道初始化器
+
+		try {
+			// 绑定ip端口
+			ChannelFuture channelFuture = serverBootstrap.bind("localhost", 8080).sync();
+			channelFuture.channel().closeFuture().sync();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}finally {
+			// 优雅关闭
+			bossGroup.shutdownGracefully();
+			workGroup.shutdownGracefully();
+		}
+	}
+
+	static class MyNettyServer01ChannelInitializer extends ChannelInitializer<SocketChannel> {
+
+		@Override
+		protected void initChannel(SocketChannel ch) throws Exception {
+			ChannelPipeline pipeline = ch.pipeline();
+						// HttpServerCodec 编解码通道处理器 HttpRequestDecoder、HttpResponseEncoder的合并
+			pipeline.addLast("httpServerCodec",new HttpServerCodec())
+						// StringEncoder、StringDecoder字符串编解码处理器
+					.addLast("stringDec",new StringDecoder())
+					.addLast(new StringEncoder())
+						// 业务处理 handler
+					.addLast("httpHandler",new MyNettyServer01ChannelInBuoundHandler());
+		}
+	}
+
+	// ChannelInboundHandlerAdapter 子类  SimpleChannelInboundHandler
+	static class MyNettyServer01ChannelInBuoundHandler extends SimpleChannelInboundHandler<HttpObject> {
+
+		@Override
+		protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+			// msg 类型
+			System.out.println(msg.getClass());
+			// 远程通道地址
+			System.out.println(ctx.channel().remoteAddress());
+			// 可进行查看 remote address
+			Thread.sleep(8000);
+
+			if(msg instanceof HttpRequest) {
+				HttpRequest httpRequest = (HttpRequest)msg;
+
+				System.out.println("请求方法名：" + httpRequest.method().name());
+
+				URI uri = new URI(httpRequest.uri());
+				if("/favicon.ico".equals(uri.getPath())) {
+					System.out.println(uri.getPath());
+				}
+				ByteBuf content = Unpooled.copiedBuffer("Hello World ~",CharsetUtil.UTF_8);
+				FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1
+						, HttpResponseStatus.OK, content);
+				response.headers().set(HttpHeaderNames.CONTENT_TYPE,"text/plain");
+				response.headers().set(HttpHeaderNames.CONTENT_LENGTH,content.readableBytes());
+				// 写回响应
+				ctx.writeAndFlush(response);
+				// 关闭通道 - 服务端主动关闭（可根据连接的保持时间来定时关闭）
+				ctx.channel().close();
+			}
+		}
+
+		// 3.active
+		@Override
+		public void channelActive(ChannelHandlerContext ctx) throws Exception {
+			System.out.println("channel active");
+			super.channelActive(ctx);
+		}
+
+		// 2.registered
+		@Override
+		public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+			System.out.println("channel registered");
+			super.channelRegistered(ctx);
+		}
+
+		// 1.added
+		@Override
+		public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+			System.out.println("handler added");
+			super.handlerAdded(ctx);
+		}
+
+		// 4.inActive
+		@Override
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+			System.out.println("channel inActive");
+			super.channelInactive(ctx);
+		}
+
+		// 5.unRegistered
+		@Override
+		public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+			System.out.println("channel unRegistered");
+			super.channelUnregistered(ctx);
+		}
+	}
+}
+```
 ### 2.Netty 对 Socket 的支持
-     Socket 的支持
-     类比记忆：
-     NioServerSocketChannel -> ServerSocket
-     NioSocketChannel -> Socket
-     测试：启动服务器与客户端
+```java
+/**
+ * @author shadow
+ * @create 2020-09-29
+ * @description
+ *
+ * Socket 的支持
+ * 类比记忆：
+ * NioServerSocketChannel -> ServerSocket
+ * NioSocketChannel -> Socket
+ * 测试：启动服务器与客户端
+ *
+ */
+public class NettyServer02 {
+	public static void main(String[] args) {
+		EventLoopGroup bossGroup = new NioEventLoopGroup();
+		EventLoopGroup workGroup = new NioEventLoopGroup();
+
+		ServerBootstrap serverBootstrap = new ServerBootstrap();
+		serverBootstrap.group(bossGroup, workGroup)
+				.channel(NioServerSocketChannel.class) // 类比 ServerSocket
+				.handler(new LoggingHandler()) // bossGroup 的 handler
+				.childHandler(new MyNettyServer02ChannelInitializer());
+		try {
+			ChannelFuture channelFuture = serverBootstrap.bind("localhost", 8090).sync();
+			channelFuture.channel().closeFuture().sync();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			bossGroup.shutdownGracefully();
+			workGroup.shutdownGracefully();
+		}
+	}
+
+	static class MyNettyServer02ChannelInitializer extends ChannelInitializer<SocketChannel> {
+		@Override
+		protected void initChannel(SocketChannel ch) throws Exception {
+			ChannelPipeline pipeline = ch.pipeline();
+			pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,0,4,0,4))
+					.addLast(new LengthFieldPrepender(4))
+					.addLast(new StringEncoder(CharsetUtil.UTF_8))
+					.addLast(new StringDecoder(CharsetUtil.UTF_8))
+					.addLast("myHandler",new MyNettyServer02ChannelInBoundHandler());
+		}
+	}
+
+	static class MyNettyServer02ChannelInBoundHandler extends SimpleChannelInboundHandler<String> {
+		@Override
+		protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+			// 接收到客户端发送的数据
+			System.out.println(ctx.channel().remoteAddress() + "," + msg);
+			// 返回客户端数据
+			ctx.writeAndFlush("from server : " + UUID.randomUUID());
+		}
+
+		// 异常处理
+		@Override
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+			cause.printStackTrace();
+			ctx.close();
+		}
+	}
+}
+```
      
 ### 3.Netty 实现的简易聊天程序
-     简易聊天程序：
-     
-     测试：
-     服务器启动 -> 客户端1建立连接、客户端2建立连接....
-     客户端上线通知其他客户端xxx上线
-     某一个客户端发送消息 -> 其余客户端收到xxx的消息，自己显示[自己] ->群发
+```java
+/**
+ * @author shadow
+ * @create 2020-09-29
+ * @description
+ *
+ * 简易聊天程序：
+ *
+ * 测试：
+ * 服务器启动 -> 客户端1建立连接、客户端2建立连接....
+ * 客户端上线通知其他客户端xxx上线
+ * 某一个客户端发送消息 -> 其余客户端收到xxx的消息，自己显示[自己] ->群发
+ *
+ */
+public class NettyServer03 {
+	public static void main(String[] args) {
+		EventLoopGroup bossGroup = new NioEventLoopGroup();
+		EventLoopGroup workGroup = new NioEventLoopGroup();
+
+		ServerBootstrap serverBootstrap = new ServerBootstrap();
+		serverBootstrap.group(bossGroup, workGroup)
+				.channel(NioServerSocketChannel.class)
+				.childHandler(new MyNettyServer03ChannelInitializer());
+		try {
+			ChannelFuture channelFuture = serverBootstrap.bind("localhost", 8090).sync();
+			channelFuture.channel().closeFuture().sync();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			bossGroup.shutdownGracefully();
+			workGroup.shutdownGracefully();
+		}
+	}
+
+	static class MyNettyServer03ChannelInitializer extends ChannelInitializer<SocketChannel> {
+		@Override
+		protected void initChannel(SocketChannel ch) throws Exception {
+			ChannelPipeline pipeline = ch.pipeline();
+			pipeline.addLast(new DelimiterBasedFrameDecoder(4096,Delimiters.lineDelimiter()))
+					.addLast(new StringDecoder(CharsetUtil.UTF_8))
+					.addLast(new StringEncoder(CharsetUtil.UTF_8))
+					.addLast(new MyNettyServer03ChannelInBoundHandler());
+		}
+	}
+
+	static class MyNettyServer03ChannelInBoundHandler extends SimpleChannelInboundHandler<String> {
+		// 存储所有客户端
+		private static ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+
+		// 客户端建立连接后 -> 广播xxx加入消息
+		@Override
+		public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+			Channel channel = ctx.channel();
+			// 通知其他客户端
+			channelGroup.writeAndFlush("【服务器】- "+ channel.remoteAddress() + " 加入\n");
+			// 添加自己
+			channelGroup.add(channel);
+		}
+
+		// 接收到客户端的消息 -> 广播发送消息
+		@Override
+		protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+			Channel channel = ctx.channel();
+			channelGroup.forEach(ch -> {
+				if(channel != ch) {
+					ch.writeAndFlush(channel.remoteAddress() + " 发送的消息：" + msg + "\n");
+				}else {
+					ch.writeAndFlush("【自己】 " + msg + "\n");
+				}
+			});
+		}
+
+		@Override
+		public void channelActive(ChannelHandlerContext ctx) throws Exception {
+			Channel channel = ctx.channel();
+			System.out.println(channel.remoteAddress() + " 上线");
+		}
+
+		@Override
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+			Channel channel = ctx.channel();
+			System.out.println(channel.remoteAddress() + " 下线");
+		}
+
+		// 客户端移除 -> 广播消息xxx离开
+		@Override
+		public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+			Channel channel = ctx.channel();
+			// channelGroup.remove(channel); 这里 ChannelGroup 会自动移除，调用当然也没问题
+			System.out.println(channelGroup.size()); // 验证自动移除
+			channelGroup.writeAndFlush("【服务器】- " + channel.remoteAddress() + "离开\n");
+		}
+
+		@Override
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+			ctx.close();
+		}
+	}
+}
+```
      
 ### 4.Netty 的心跳支持
-    心跳机制 - IdleStateHandler
+```java
+/**
+ * @author shadow
+ * @create 2020-09-29
+ * @description
+ *
+ * 心跳机制 - IdleStateHandler
+ */
+public class NettyServer04 {
+	public static void main(String[] args) {
+		EventLoopGroup bossGroup = new NioEventLoopGroup();
+		EventLoopGroup workGroup = new NioEventLoopGroup();
+
+		ServerBootstrap serverBootstrap = new ServerBootstrap();
+		serverBootstrap.group(bossGroup, workGroup)
+				.channel(NioServerSocketChannel.class)
+				.handler(new LoggingHandler(LogLevel.INFO)) // bossGroup 的 handler
+				.childHandler(new MyNettyServer04ChannelInitializer());
+		try {
+			ChannelFuture channelFuture = serverBootstrap.bind("localhost", 8090).sync();
+			channelFuture.channel().closeFuture().sync();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			bossGroup.shutdownGracefully();
+			workGroup.shutdownGracefully();
+		}
+	}
+
+	static class MyNettyServer04ChannelInitializer extends ChannelInitializer<SocketChannel> {
+		@Override
+		protected void initChannel(SocketChannel ch) throws Exception {
+			ChannelPipeline pipeline = ch.pipeline();
+			pipeline.addLast(new IdleStateHandler(5,7,10,TimeUnit.SECONDS)) //(读时间,写时间,读写时间) 空闲检测 handler(没有读写的情况下触发事件)
+					.addLast(new MyNettyServer04ChannelInBoundHandler());
+		}
+	}
+
+	static class MyNettyServer04ChannelInBoundHandler extends ChannelInboundHandlerAdapter {
+		// 事件触发
+		@Override
+		public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+			if(evt instanceof IdleStateEvent) {
+				IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
+
+				String eventType = "";
+
+				switch (idleStateEvent.state()) {
+					case READER_IDLE:
+						eventType = "读空闲";
+						break;
+					case WRITER_IDLE:
+						eventType = "写空闲";
+						break;
+					case ALL_IDLE:
+						eventType = "读写空闲";
+						break;
+				}
+				System.out.println(ctx.channel().remoteAddress() + "超时事件：" + eventType);
+				ctx.close();
+			}
+		}
+	}
+}
+```
     
 ### 5.Netty 对 WebSocket 的支持
      对 WebSocket 的支持
+     
      基于 HTTP，需要http编解码器
-     	- HttpServerCodec
+      - HttpServerCodec
       - ChunkedWriteHandler  块
       - HttpObjectAggregator 聚合
+      
      websocket的编解码器
       - WebSocketServerProtocolHandler
      
@@ -35,7 +374,66 @@
      	- PingWebSocketFrame
      	- PongWebSocketFrame
      	- CloseWebSocketFrame
-     	
+```java
+public class NettyServer05 {
+	public static void main(String[] args) {
+		EventLoopGroup bossGroup = new NioEventLoopGroup();
+		EventLoopGroup workGroup = new NioEventLoopGroup();
+
+		ServerBootstrap serverBootstrap = new ServerBootstrap();
+		serverBootstrap.group(bossGroup, workGroup)
+				.channel(NioServerSocketChannel.class)
+				.handler(new LoggingHandler(LogLevel.INFO))
+				.childHandler(new MyNettyServer05Initializer());
+		try {
+			ChannelFuture channelFuture = serverBootstrap.bind("localhost", 8090).sync();
+			channelFuture.channel().closeFuture().sync();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			bossGroup.shutdownGracefully();
+			workGroup.shutdownGracefully();
+		}
+	}
+
+	static class MyNettyServer05Initializer extends ChannelInitializer<SocketChannel> {
+		@Override
+		protected void initChannel(SocketChannel ch) throws Exception {
+			ChannelPipeline pipeline = ch.pipeline();
+			pipeline.addLast(new HttpServerCodec())
+					.addLast(new ChunkedWriteHandler())
+					.addLast(new HttpObjectAggregator(8192))
+					.addLast(new WebSocketServerProtocolHandler("/ws"))
+					.addLast(new MyNettyServer05ChannelInBoundHandler());
+		}
+	}
+
+	static class MyNettyServer05ChannelInBoundHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+		@Override
+		protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
+			// 打印消息
+			System.out.println("收到消息:" + msg.text());
+			// 写回消息
+			ctx.writeAndFlush(new TextWebSocketFrame("websocket message：服务器时间" + LocalDateTime.now()));
+		}
+
+		@Override
+		public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+			System.out.println("handler added: " + ctx.channel().id().asLongText());
+		}
+
+		@Override
+		public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+			System.out.println("handler removed: " + ctx.channel().id().asLongText());
+		}
+
+		@Override
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+			ctx.close();
+		}
+	}
+}
+```
 
 ## chapter02 - Google-protobuf （Protocol Buffers）
 ### 1.protobuf 的使用
@@ -412,5 +810,496 @@ public class GrpcClient {
 }
 ```
 
+## chapter05 - Java I/O 系统 （装饰模式）
+### 1.传统 I/O 系统 - 流
+    
+   1、功能划分
+    
+    输入流
+    输出流    
+
+   2、结构划分
+   
+    字节流 InputStream、OutputStream
+    字符流 Reader、Writer
+    
+   3、作用划分
+   
+    结点流：从特定的地方读写的流类，例如L磁盘或一块内存区域
+    过滤流：使用节点流作为输入或输出，过滤流是使用一个已经存在的输入流或输出流连接创建的（包装节点流）
+    
+   ![字节输入流](./字节输入流.png)
+   ![字节输出流](./字节输出流.png)
+    
+   ![字符输入流](./字符输入流.png)
+   ![字符输出流](./字符输出流.png)
+   
+   4、操作逻辑
+    
+    1、读数据的逻辑
+       open a stream
+       while more information
+       read information
+       close the stream     
+    
+    2、写数据的逻辑
+       open a stream
+       while more information
+       write information
+       close the stream
+   
+   ![IO流的链接](./IO流的链接.png)
+   
+   
+### 2. NIO 与 传统 IO 的对比
+    
+    java.io
+    java.nio
+    
+    java.io中最为核心的一个概念是流（Stream），面向流的编程。Java中，一个流要么是输入流，要么是输出流，不可能同时是输入流又是输出流
+    java.nio中拥有三个核心的概念：Selector、Channel和Buffer。在java.nio中，我们是面向块（block）或是缓冲区（buffer）编程的
+    Buffer本身就是一块内存，底层实际上，它是一个数组。数据的读写都是通过Buffer来实现的。
+    
+    除了数组之外，Buffer还提供了对于数据的结构化访问方式，并且可以追踪到系统的读写过程。   
+
+    Java中的8种原生数据类型除了Boolean外都有各自的Buufer类型，如IntBuffer、LongBuffer、ButeBuffer及CharBuffer等
+    
+    Channel指的是可以向其写入数据或是从中读取数据的对象，它类似于java.io中的Stream
+    
+    所有数据的读写都是通过Buffer来进行的，永远不会出现直接向Channle写入数据的情况，或是直接从Channel读取数据的情况
+    
+    与Stream不同的是，Channel是双向的，一个流只可能是InputStream或是 OutputStream，Channel打开后则可以进行读取、写入或读写
+    
+    由于Channel是双向的，因此它能更好的反映出底层操作系统的真实情况，在Linux系统中，底层操作系统的通道就是双向的 。
+    
+    
+### 3. Buffer 源码中的重要参数
+
+   1、capacity 
+    
+    缓冲区 Buffer 的容量，缓冲区的容量永远不会为负，也永远不会改变
+    
+   2、limit
+   
+    第一个不被读或写的索引位置，缓冲区的limit永远不会是负数，也不会超过capacity
+    
+   3、position
+    
+    将要被读取或写入元素的索引，缓冲区的position永远不会是负的，也不会超过 limit
+
+   
+   三者间的关系
+    
+    0 <= mark <= position <= limit <= capacity  
+
+### 4.Buffer 重要方法 [参考](https://blog.csdn.net/z781582206/article/details/77868160)
+    
+    1、allocate(size) 
+        limit = capacity = size
+        position = 0 
+    2、put() 
+        position++
+    3、flip() 
+        limit = position
+        position = 0
+    4、clear()
+        position = 0
+        limit = capacity;
+    5、get() 
+        position++;
+    6、capacity()
+        return capacity  
+    7、position()
+        return position
+    8、limit()
+        return limit
+    
+### 5.Channel  - NIO04.java
+    
+    通过NIO读取文件涉及到三个步骤：
+    1、从FileInputStream获取到FileChannel对象
+    2、创建 Buffer
+    3、将数据从Channel读取到Buffer中
+    
+    绝对方法与相对方法的含义：
+    1、相对方法：limit值与position值会在操作时被考虑到
+    2、绝对方法：完全忽略掉 limit 值与 position 值
+    
+    
+### 6.ByteBuffer 类型化的 put 与 get
+   ```java
+public class NIO05 {
+	public static void main(String[] args) {
+		ByteBuffer byteBuffer = ByteBuffer.allocate(64);
+
+		byteBuffer.putInt(10);
+		byteBuffer.putLong(2000000000L);
+		byteBuffer.putDouble(3.1415926);
+		byteBuffer.putChar('C');
+		byteBuffer.putShort((short) 3);
+		byteBuffer.putChar('钦');
+
+		byteBuffer.flip();
+
+		System.out.println(byteBuffer.getInt());
+		System.out.println(byteBuffer.getLong());
+		System.out.println(byteBuffer.getDouble());
+		System.out.println(byteBuffer.getChar());
+		System.out.println(byteBuffer.getShort());
+		System.out.println(byteBuffer.getChar());
+
+	}
+}
+```
+
+### 7.Slice Buffer  - Buffer 共享底层数组
+   Slice Buffer 与原有的 Buffer 共享相同的底层数组
+```java
+public class NIO06 {
+	public static void main(String[] args) {
+		ByteBuffer byteBuffer = ByteBuffer.allocate(10);
+
+		for (int i = 0; i < byteBuffer.capacity(); i++) {
+			byteBuffer.put((byte) i);
+		}
+
+		byteBuffer.position(2);
+		byteBuffer.limit(6);
+
+		ByteBuffer sliceBuffer = byteBuffer.slice();
+
+		for (int i = 0; i < sliceBuffer.capacity(); i++) {
+			byte b = sliceBuffer.get();
+			b *= b;
+			sliceBuffer.put(i,b);
+		}
+
+		byteBuffer.position(0);
+		byteBuffer.limit(byteBuffer.capacity());
+
+		while (byteBuffer.hasRemaining()) {
+			System.out.println(byteBuffer.get());
+		}
+
+	}
+}
+```
+
+### 8.只读Buffer
+   只读 Buffer，我们可以随时将一个普通额Buffer调用asReadOnlyBuffer方法返回一个只读Buffer
+   但是不同将一个只读Buffer转换为读写Buffer
+  
+   ```java
+public class NIO07 {
+	public static void main(String[] args) {
+		ByteBuffer byteBuffer = ByteBuffer.allocate(10);
+
+		System.out.println(byteBuffer.getClass());
+
+		for (int i = 0; i < byteBuffer.capacity(); i++) {
+			byteBuffer.put((byte) i);
+		}
+
+		ByteBuffer readOnlyBuffer = byteBuffer.asReadOnlyBuffer();
+
+		System.out.println(readOnlyBuffer.getClass());
+		readOnlyBuffer.position(0);
+		// readOnlyBuffer.put((byte) 2);
+
+	}
+}
+```
 
 
+### 9.allocate() 与 allocateDirect() [零拷贝的实现]
+    
+    allocate 分配的内存在 JVM 堆内存中，而 allocateDirect 分配的内存是堆外内存，也叫直接内存
+    Buffer 中的 address 变量就是存放直接缓冲的堆外内存地址
+
+
+### 10. MappedByteBuffer - 内存映射缓冲 - NIO09.java
+```java
+public class NIO09 {
+	public static void main(String[] args) throws IOException {
+		RandomAccessFile randomAccessFile = new RandomAccessFile("NIO09.txt", "rw");
+		FileChannel channel = randomAccessFile.getChannel();
+
+		MappedByteBuffer mappedByteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, 5);
+
+		mappedByteBuffer.put(0, (byte) 'a');
+		mappedByteBuffer.put(3, (byte) 'b');
+
+		randomAccessFile.close();
+	}
+}
+```
+    
+### 11. 文件锁 - NIO10.java
+```java
+public class NIO10 {
+
+	public static void main(String[] args) throws Exception {
+		RandomAccessFile accessFile = new RandomAccessFile("NIO10.txt", "rw");
+		FileChannel fileChannel = accessFile.getChannel();
+
+		FileLock fileLock = fileChannel.lock(3, 6, true);
+
+		System.out.println("valid: " + fileLock.isValid());
+		System.out.println("lock type : " + fileLock.isShared());
+
+		fileLock.release();
+		accessFile.close();
+	}
+}
+```
+    
+### 12.关于Buffer的Scattering(分散) 与 Gathering(收集)
+```java
+public class NIO11 {
+	public static void main(String[] args) throws Exception{
+		ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+
+		serverSocketChannel.socket().bind(new InetSocketAddress(8899));
+
+		int messageLength = 2 + 3 + 4;
+
+		ByteBuffer[] buffers = new ByteBuffer[3];
+		buffers[0] = ByteBuffer.allocate(2);
+		buffers[1] = ByteBuffer.allocate(3);
+		buffers[2] = ByteBuffer.allocate(4);
+
+		SocketChannel socketChannel = serverSocketChannel.accept();
+
+		while (true) {
+			int bytesRead = 0;
+
+			while (bytesRead < messageLength) {
+				long read = socketChannel.read(buffers);
+				bytesRead += read;
+
+				System.out.println("bytesRead = " + bytesRead);
+				Arrays.asList(buffers).stream().map(buffer ->{
+					return "position：" + buffer.position() + " limit：" + buffer.limit();
+				}).forEach(System.out::println);
+			}
+
+			Arrays.asList(buffers).forEach(buffer ->{
+				buffer.flip();
+			});
+
+			long bytesWritten = 0;
+			while (bytesWritten < messageLength) {
+				long write = socketChannel.write(buffers);
+				bytesWritten += write;
+			}
+
+			Arrays.asList(buffers).forEach(buffer ->{
+				buffer.clear();
+			});
+
+			System.out.println("bytesRead：" + bytesRead);
+			System.out.println("bytesWritten：" + bytesWritten);
+			System.out.println("messageLength：" + messageLength);
+		}
+	}
+}
+```
+    
+### 13.Selector （Channel、Buffer）
+
+   1、传统的网络编程 - 伪代码 - 连接太多导致开启线程过多问题
+  
+  ```java
+// 服务端
+ServerSocket serverSocket = ...
+serverSocket.bind(8899)
+while(true){
+	Socket socket = serverSocket.accept()
+	new thread(socket) {
+		run(){
+			socket.getInputStream()
+			...
+			...
+		}
+	}
+}
+
+//客户端
+Socket socket = new Socket("localhost",8899)
+socket.connect()
+```
+
+   2、Selector - SelectionKey - 事件 NIO12.java
+```java
+public class NIO12 {
+	public static void main(String[] args) throws Exception{
+
+		int[] ports = new int[5];
+		ports[0] = 5000;
+		ports[1] = 5001;
+		ports[2] = 5002;
+		ports[3] = 5003;
+		ports[4] = 5004;
+
+		// 1、Selector
+		Selector selector = Selector.open();
+
+		// 2、Channel
+		for (int i = 0; i < ports.length; i++) {
+			ServerSocketChannel socketChannel = ServerSocketChannel.open();
+			socketChannel.configureBlocking(false); // TODO 非阻塞
+			socketChannel.socket().bind(new InetSocketAddress(ports[i]));
+
+			socketChannel.register(selector,SelectionKey.OP_ACCEPT); // TODO 关注连接事件
+			System.out.println("服务监听端口：" + ports[i]);
+		}
+
+		while (true){
+			int numbers = selector.select();
+			System.out.println("numbers = " + numbers);
+
+			Set<SelectionKey> selectionKeys = selector.selectedKeys();
+			Iterator<SelectionKey> iterator = selectionKeys.iterator();
+			while (iterator.hasNext()) {
+				SelectionKey selectionKey = iterator.next();
+				if(selectionKey.isAcceptable()) { // TODO 连接事件
+					// TODO ServerSocketChannel
+					ServerSocketChannel serverSocketChannel = (ServerSocketChannel) selectionKey.channel();
+					SocketChannel socketChannel = serverSocketChannel.accept();
+					socketChannel.configureBlocking(false);// TODO 非阻塞
+					socketChannel.register(selector,SelectionKey.OP_READ); // TODO 关注读事件
+					// TODO 一定要移除
+					iterator.remove();
+					System.out.println("客户端连接：" + socketChannel);
+				}else if(selectionKey.isReadable()) { // TODO 读取事件
+					// TODO SocketChannel
+					SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+
+					int bytesRead = 0;
+					while (true){
+						// 3、Buffer
+						ByteBuffer byteBuffer = ByteBuffer.allocate(512);
+
+						byteBuffer.clear();
+
+						int read = socketChannel.read(byteBuffer);
+
+						if(read <= 0) {
+							break;
+						}
+
+						byteBuffer.flip();
+
+						socketChannel.write(byteBuffer);
+
+						bytesRead += read;
+					}
+
+					System.out.println("读取：" + bytesRead + "来自于：" + socketChannel);
+					// TODO 一定要移除
+					iterator.remove();
+				}
+			}
+		}
+	}
+}
+```
+
+
+### 14.Buffer、Channel、Selector 网络聊天程序
+    
+    1、NIOServer01
+    2、NIOClient01
+    
+    注意点：
+    1、ServerSocketChannel、SocketChannel
+    2、configureBlocking(false)
+    3、Selector.open()
+    4、register(selector,event)
+    5、SelectionKey
+    
+    
+
+## chapter06 - 编码问题
+### 1. 获取字符集
+    
+   ```java
+		SortedMap<String, Charset> charsets = Charset.availableCharsets();
+		charsets.forEach((k,v) ->{
+			System.out.println("k: " + k + "| v: " + v);
+		});
+```
+
+
+### 2.常见的字符编码
+    
+   1、ASCII（American Standard Code for Information Interchange 美国信息交换标准代码）
+      
+      7 bit 来表示一个字符，共计可以表示 128 种字符
+      
+   2、iso-8859-1
+    
+      8 bit 来表示一个字符，即用一个字节（byte）（8bit）来表示一个字符，共计可以表示256个字符
+      完全兼容ASCII
+   
+   3、gb2312
+      
+      两个字节（2个byte 16bit）表示一个汉字          
+
+   4、gbk
+   
+      完全兼容GB2312，支持生僻字，是GB2312的超集
+      
+   5、gb18030
+    
+      汉字表示最全的编码
+      
+   6、big5
+        
+      台湾的编码
+      
+   7、unicode
+        
+      采用了两个字节（2byte 16bit）来表示一个字符
+      带来存储空间浪费的问题
+   
+   8、UTF（Unicode Translation Format）
+    
+      unicode 是一种 编码方式，而 UTF 是一种存储方式，UTF-8是unicode的实现方式之一
+      
+      UTF-16LE（little endian）小端、UTF16-BE（big endian）大端
+      Zero Width No-Break Space : 0xFEFF(BE)、0xFFFE(LE)
+
+      UTF-8 变长字节表示形式
+      
+      一般来说 UTF-8会通过3个字节来表示一个中文
+      
+      BOM（Byte Order Mark）    
+    
+    
+    
+
+## chapter07 - Netty 底层源码分析
+
+   1、    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
