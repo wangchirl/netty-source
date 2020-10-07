@@ -1279,9 +1279,421 @@ public class NIO12 {
     
     
 
-## chapter07 - Netty 底层源码分析
+## chapter07 - 零拷贝
+### 1.零拷贝原理
+   1、![零拷贝](./零拷贝.png)
+    
+   2、内存映射、FileChannel#transferTo() 
+   
+   
+   
+## chapter08 - Netty 源码解析
+### 1. NIO 三大组件
+    
+    1、Buffer
+       - ByteBuffer
+       - ShortBuffer
+       - IntBuffer
+       - LongBuffer
+       - DoubleBuffer
+       - FloatBuffer
+       - CharBuffer
+       
+       三个重要的参数：
+        - position
+        - limit
+        - capacity
+       
+       重要的方法：
+        - allocate()
+        - allocateDirect()
+        - put()
+        - flip()
+        - rewind()
+        - clear()
+        - position()
+        - limit()
+        - capacity()
+        
+       
+    2、Channel
+       - ServerSocketChannel
+          - socket() -> ServerSocket
+          - accept() -> SocketChannel
+          - bind()
+          - configureBlocking() -> 配置阻塞模式
+          - register() -> 将通道注册到 Selector 上
+          
+       - SocketChannel
+          - open() -> SocketChannel
+          - connect()
+          - configureBlocking() -> 配置阻塞模式
+          - register() -> 将通道注册到 Selector 上
+          
+    3、Selector
+       - open() -> Selector
+       - select()
+       - SelectorProvider#provider()#openSelector()
+       - SelectionKey
+          - OP_ACCEPT
+          - OP_READ
+          - OP_WRITE
+          - OP_CONNECT
+    
+    
+### 2.Netty 服务端组件分析
+    
+    1、EventLoopGroup -> NioEventLoopGroup
 
-   1、    
+        
+    2、ServerBootstrap [AbstractBootstrap]
+        - group -> bossGroup
+        - childGroup -> workGroup
+        - channelFactory
+        - handler
+        - childHandler
+        
+    3、ServerSocketChannel -> NioServerSocketChannel
+        - ReflectiveChannelFactory -> 反射创建 NioServerSocketChannel 对象
+        
+    4、ChannelInitializer -> 批量添加 ChannelHandler   
+    
+    5、Future（extends java.util.concurrent.Future） -> ChannelFuture
+        - isSuccess()
+        - addListener(listener) -> 监听任务完成后调用监听器的 operationComplete() 方法
+        
+        
+
+### 3.Reactor模式的角色构成（Reactor模式一共有五种角色构成）
+    
+    1、Handle（句柄或是描述符）：本质上表示一种资源，是由操作系统提供的；该资源用于表示一个个的事件，比如说文件描述符
+       或是针对网络编程中的 Socket 描述符。事件既可以来自于外部，也可以来自于内部；外部事件比如说客户端的逻辑请求，客
+       户端发送过来的数据；内部事件比如说操作系统产生的定时器事件等。它本质上就是一个文件描述符。Handle是事件产生的发源地
+       
+    2、Synchronous Event Demultiplexer（同步事件分离器）：它本身是一个系统调用，用于等待事件的发生（事件可能是一个，
+        也可能是多个）。调用方在调用它的时候会被阻塞，一直阻塞到同步事件分离器上有事件产生为止。对于Linux来说，同步事件
+        分离器指的就是常用的I/O多路复用机制，比如select、poll、epoll等。在Java NIO领域中，同步事件分离器对应的组件是
+        Selector；对应的阻塞方法就是select()方法
+    
+    3、Event Handle（事件处理器）：本身由多个回调方法构成，这些回调方法构成了与应用相关的对于某个事件的反馈机制。Netty
+       相比于Java NIO 来说，在事件处理器这个角色上进行了一个升级，它为我们开发者提供了大量的回调方法，供我们在特定的事件
+       产生时实现相应的回调方法进行业务逻辑的处理 - SimpleChannelInboundHandler...
+       
+    4、Concrete Event Handle（具体事件处理器）：是事件处理器的实现。它本身实现了事件处理器所提供的各个回调方法，从而
+       实现了特定于业务的逻辑。它本质上就是我们所编写的一个个的处理器实现。- MyNettyServer02ChannelInBoundHandler...            
+    
+    5、Initiation Dispatcher（初始分发器）：实际上就是Reactor角色。它本身定义了一些规范，这些规范用于控制事件的调度方法，
+       同时又提供了应用进行事件处理器的注册、删除等设施。它本身是整个事件处理器的核心所在，Initiation Dispatcher会通过同步
+       事件分离器来等待事件的发生。一旦事件发生，Initiation Dispatcher首先会分离出每一个事件，然后调用事件处理器，最后调用
+       相关的回调方法来处理这些事件
+    
+### 4.Reactor模式的流程
+    
+    1、当应用向 Initiation Dispatcher 注册具体的事件处理器时，应用会标识出该事件处理器希望 Initiation Dispatcher在某个
+       事件发生时向其通知的该事件，该事件与Handle关联
+   
+    2、Initiation Dispatcher 会要求每个事件处理器向其传递内部的 Handle。该Handle向操作系统标识了事件处理器。
+    
+    3、当所有的事件处理器注册完毕后，应用会调用 handle_events方法来启动Initiation Dispatcher的事件循环。这时，Initiation 
+       Dispatcher会将每个注册的事件管理器的Handle合并起来，并使用同步事件分离器等待这些事件的发生。比如说，TCP协议层会使用
+       select同步事件分离器操作来等待客户端发送的数据到达连接的Socket handle 上。
+       
+    4、当与某个事件源对于的 Handle 变为 ready 状态时（比如说，TCP socket变为等待读状态时），同步事件分离器就会通知 Initiation
+       Dispatcher
+   
+    5、Initiation Dispatcher 会触发事件处理器的回调方法，从而响应这个处于ready状态的Handle。当事件发生时，Initiation Dispatcher
+       会将被事件源激活的 Handle 作为 key 来寻找恰当的事件处理器回调方法。
+  
+    6、Initiation Dispatcher会回调事件处理器的 handle_events回调方法来执行特定于应用的功能（开发者自己所编写的功能）。从而
+       响应这个事件。所发生的事件类型可以作为该方法参数并被该方法内部使用来执行额外的特定于服务的分离与分发。    
+    
+    
+    
+ ### 5.Netty中组件的关系
+    
+    1、一个EventLoopGroup当中会包含一个或多个EventLoop。
+    2、一个EventLoop在它的整个生命周期当中都只会与唯一一个Thread进行绑定。
+    3、所有由EventLoop所处理的各种I/O事件都将在它所关联的那个Thread上进行处理。
+    4、一个Channel在它的整个生命周期中只会注册在一个EventLoop上。
+    5、一个EventLoop在运行过程中，会被分配一个或多个Channel。  
+    
+    Channel -> EventLoop
+     1      ->  N
+    
+    EventLoopGroup -> EventLoop
+     1             ->  N 
+    
+    EventLoop -> Thread
+     1        ->  1
+    
+    在Netty中，Channel的实现一点定是线程安全的；基于此，我们可以存储一个Channel的引用，并且在需要向远程端点发送数据时，
+    通过这个引用来调用Channel相应的方法；即便当时有很多线程都在使用它也不会出现多线程问题。而且，消息一定会按顺序发送出去
+
+     
+    重要结论： 我们在业务开发中，不要将长时间执行的耗时任务放入到EventLoop的执行队列中，因为它将会一直阻塞该线程所对应的所有
+    Channel上的其他执行任务，如果我们需要进行阻塞调用或是耗时的操作（实际开发中很常见），那么我们就需要使用一个专门的EventExecutor(业务线程池)
+    
+    业务线程池的通常会有两种实现方式：
+    1、在ChannelHandler 的回调方法中，使用自己定义的业务线程池，这样就可以实现异步调用
+   ```java
+    private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+```
+    2、借助于 Netty 提供的 ChannelPipeline 添加 ChannelHandler 时调用的 addLast 方法来传递EventEecutor
+   ```java
+ChannelPipeline pipeline = ch.pipeline();
+pipeline.addLast(group,name,new XXHandler());
+```
+    
+    说明：默认情况下（调用addLast(handler)），ChannelHandler中的回调方法都是由I/O线程所执行，如果调用了 ChannelPipeline 的
+    addLast(EventExecutorGroup group, ChannelHandler... handlers)方法，那么ChannelHandler中的回调方法就是由参数中的group
+    线程组来执行的。    
+    
+    
+### 6.Netty中的Future
+    
+    JDK所提供的Future只能通过手工方式检查执行结果，而这个操作是会阻塞的;Netty则对 ChannelFuture 进行了增强，通过 ChannelFutureListener以
+    回调的方式来获取执行结果，去除了手工检查阻塞的操作；值得注意的是：ChannelFutureListener的operationCompete方法是由I/O线程执行的，因此
+    要注意的是不要在这里执行耗时操作，而是需要通过另外的线程或线程池来执行。    
+    
+    那么 ChannelFutureListener 是如何被通知的呢？是通过 ChannelFuture的 ChannelPromise 的写方法来实现的。
+    
+### 7.Netty中的写消息
+    
+    在Netty中有两种发送消息的方式，可以直接写到 Channel中，也可以写到 ChannelHandler所关联的那个 ChannelHandlerContext中，对与前一种方式来说
+    消息会从ChannelPipeline的末尾开始流动；对于后一种方式来说，消息将从 ChannelPipeline中的下一个ChannelHandler开始流动 。
+  ```java
+ctx.channel().writeAndFlush(msg); // 消息会经过所有的 handler 的处理
+ctx.writeAndFlush(msg); // 消息只经过部分 handler 的处理
+```
+    结论：
+    1、ChannelHandlerContext 与 ChannelHandler 之间的关联绑定关系是永远都不会发送改变的，因此对其进行缓存是没有任何问题的。
+    2、对于 Channel 的同名方法来说，ChannelHandlerContext 的方法将会产生更短的事件流，所以我们应该在可能的情况下利用这个特性来提升应用性能
+    
+    
+### 8.Netty中的 ByteBuf
+
+    1、使用NIO进行文件读取涉及的步骤：
+        - 1.从FileInputStream对象获取到Channel对象。
+        - 2.创建 Buffer。
+        - 3.将数据从Channel中读取到buffer对象中。
+        
+        - 0 <= mark <= position <= limit <= capacity
+        
+        - filp()方法：
+        - 1.将limit值设置为当前的position
+        - 2.将position设置为 0
+        
+        - clear()方法：
+        - 1.将limit值设置为capacity
+        - 2.将position设置为 0
+        
+        - compact()方法：
+        - 1.将所有未读的数据复制到buffer起始位置出
+        - 2.将position设置为最后一个未读元素的后面
+        - 3.将limit设置为 capacity
+        - 4.现在buffer就准备好了，但是不会覆盖未读的数据
+    
+    2、Netty 中的 ByteBuf
+        
+        ByteBuf byteBuf = Unpooled.buffer(10);
+        
+        0 <= readerIndex <= writeIndex <= capacity
+     
+        读索引和写索引，对比NIO中的是通过 flip方法来修改position
+        
+        注意：通过索引来访问Byte时并不会改变真实的读索引与写索引
+             我们可以通过 ByteBuf的readerIndex(index)与writeIndex(index)方法分别直接修改读索引与写索引
+    
+   ```java
+public class ByteBuf01 {
+	public static void main(String[] args) {
+		ByteBuf byteBuf = Unpooled.buffer(10);
+
+		for (int i = 0; i < 10; i++) {
+			byteBuf.writeByte(i);
+		}
+
+		for (int i = 0; i < byteBuf.capacity(); i++) {
+			System.out.println(byteBuf.getByte(i));
+		}
+		// readerIndex未改变
+		System.out.println("readerIndex = " + byteBuf.readerIndex());
+		for (int i = 0; i < byteBuf.capacity(); i++) {
+			System.out.println(byteBuf.readByte());
+		}
+		// readerIndex被改变
+		System.out.println("readerIndex = " + byteBuf.readerIndex());
+	}
+}
+```
+
+    3、Netty ByteBuf 所提供的三种缓冲区类型：
+      ① head buffer
+      ② direct buffer
+      ③ composite buffer
+      
+      Heap Buffer(堆缓冲区)：
+      这是最常用的类型，ByteBuf 将数据存储到JVM的堆空间中，并且将实际的数据存放到 byte array 中来实现
+      优点：由于数据是存储在JVM的堆中，因此可以快速的创建与快速的释放，并且它提供了直接访问内部字节数组的方法
+      缺点：每次读写数据时，都需要先将数据复制到直接缓冲区中再进行网络传输（存在数据拷贝的过程）
+      
+      Direct Buffer(直接缓冲区)：
+      在堆之外直接分配内存空间，直接缓冲区并不会占用堆的容量空间，因为它是由操作系统在本地内存进行的数据分配
+      优点：在使用Socket进行数据传递时，性能非常好，因为数据直接位于操作系统的本地内存中，所以不需要从JVM将数据复制到直接缓冲区中，性能很好
+      缺点：因为Direct Buffer是直接在操作系统内存中的，所以内存空间的分配与释放要比堆空间更加复杂，而且速度要慢一些
+      
+      Netty通过提供内存池来解决这个问题，直接缓冲区并不支持通过字节数组的方式来访问数据。
+      
+      重点：对于后端的业务消息的编解码来说，推荐使用heapBuffer；对于I/O通信线程在读写缓冲区时，推荐使用DiretBuffer
+      
+      Composite Buffer (复合缓冲区)：
+      可以结合 Heap Buffer、Direct Buffer
+      
+      
+      JDK的ByteBuffer与Netty的ByteBuf之间的差异对比：
+      1.Netty的ByteBuf采用了读写索引分离的策略（readerIndex与writerIndex）,一个初始化（里面尚未有任何数据）的ByteBuf的readerIndex
+        与writerIndex值都为 0
+      2.当读索引与写索引处于同一位置时，如果我们继续读取，那么就会抛出IndexOutOfBoundsException
+      3.对于ByteBuf的任何读写操作都会分别单独维护读索引与写索引。maxCapacity最大容量默认的限制就是Integer.MAX_VALUE
+      
+      
+      
+      JDK的ByteBuffer的缺点：
+      
+      1.final byte[] hb; 这是JDK的ByteBuffer对象中用于存储数据的对象声明；可以看到，其字节数组是被final修饰的，也就是长度是固定不变的
+        一旦分配好后不能动态扩容与收缩；而且当待存储的数据字节很大时就很可能出现IndexOutOfBoundsException. 如果要预防这个异常，那就需要
+        在存储之前完全确定好待存储的字节大小，如果ByteBuffer的空间不足，我们只有一种方案解决：创建一个新的ByteBuffer对象，然后再将之前的
+        ByteBuffer中的数据复制过去，这一切操作都需要由开发者自己来手动完成。
+      2.ByteBuffer只能使用一个position指针来标识位置信息，在进行读写切换时就需要调用 flip方法或是rewind方法，使用起来不方便。
+      
+      
+      Netty的ByteBuf的优点：
+      
+      1.存储字节的数组是动态的，其最大值默认是Integer.MAX_VALUE。这里的动态性是体现在write方法中的，write方法在执行时会判断buffer容量，
+        如果不足则自动扩容。
+      2.ByteBuf的读写索引（readerIndex、writerIndex）是完全分开的，使用起来方便。
+      
+      
+      AtomicIntegerFieldUpdater要点总结：
+      1.更新器更新的必须是 int 类型变量，不能是其包装类 -> field.getType() != int.class
+      2.新器更新的必须是 volatile类型的变量，确保线程之间对共享变量操作的可见性 -> Modifier.isVolatile(modifiers)
+      3.变量不能是static的，必须要说实例变量。因为Unsafe.objectFieldOffset()方法不支持静态变量（CAS操作本质上是通过对象实例的偏移量来进行赋值）
+      4.更新器只能修改它可见范围内的变量，因为更新器是通过反射来得到这个变量的，如果变量不可见就会报错 
+      
+      如果要更新的变量是包装类型，那么可以使用 AtomicReferenceFieldUpdater 来进行更新
+      
+ 
+      
+## chapter09 - Netty处理器
+
+### 1.Netty处理器重要概念
+
+    1、Netty的处理器可以分为两类：入站处理器与出站处理器
+    2、入站处理器的顶层是 ChannelInboundHandler，出站处理器的顶层是 ChannelOutboundHandler
+    3、数据处理时常有的各种编解码器本质上都是处理器
+    4、编解码器：无论我们向网络中写入的数据是什么类型（int，char，String，二进制等），数据在网络中传递时，其都是以字节流的形式呈现的
+       将数据由原来的形式转换为字节流的操作称为编码（encode），将数据由字节转换为它原本的格式或其他格式的操作称为解码（decode），
+       编解码统一称为codec
+    5、编码：本质上是一种出站处理器；因此编码一定是一种 ChannelOutboundHandler
+    6、解码：本质上是一种入站处理器；因此解码一定是一种 ChannelInboundHandler
+    7、在Netty中，编码器通常以XXXEncoder命名；解码器通常以 XXXDecoder命名
+    
+    
+   粘包与拆包的问题：-> com.shadow.netty.chapter09.demo02
+   
+   客户端发送10条数据，服务端当做一条数据处理，这是粘包的现象，需要对消息进行拆分，也就是拆包
+   
+   解决粘包与拆包：-> com.shadow.netty.chapter09.demo03
+   
+   1.自定义协议 -> com.shadow.netty.chapter09.demo03.MessageProtocol
+   
+   2.编码器 -> com.shadow.netty.chapter09.demo03.MessageEncoder
+   
+   3.解码器 -> com.shadow.netty.chapter09.demo03.MessageDecoder
+    
+    
+### 2.常用的自定义 Handler 父类及其作用 -> com.shadow.netty.chapter09.demo01
+    
+    1、SimpleChannelInboundHandler（父类 ChannelInboundHandlerAdapter）
+        提供了泛型，可以指定接收特定的类型消息，底层进行了类型转换，并且会release掉不在使用的消息，重写如下方法：
+        protected abstract void channelRead0(ChannelHandlerContext ctx, I msg) throws Exception
+    
+    2、ChannelInboundHandlerAdapter（父类 ChannelInboundHandler）
+        简单的Handler适配器；对其父类的方法进行了简单的实现；其父类提供了各种事件的回调方法，可根据所需实现对应的回调方法
+        常用的回调方法如下：
+        ① handlerAdded()
+        ② channelRegistered()
+        ③ channelActive()
+        ④ channelInactive()
+        ⑤ channelUnregistered()
+        ⑥ handlerRemoved()
+        ⑦ channelRead()
+        ⑧ channelReadComplete()
+        ⑨ exceptionCaught()
+        
+    3、ByteToMessageDecoder[入站处理器]
+        将ByteBuf解码为其他类型
+        需要对ByteBuf的可读数据进行判断：ByteBuf.readableBytes()
+        
+    4、MessageToByteEncoder[出站处理器]
+        将其他类型编码为ByteBuf
+    
+    5、ReplayingDecoder（父类 ByteToMessageDecoder）[入站处理器] -> com.shadow.netty.chapter09.demo01.MyByteToLongDecoder2
+        对 ByteToMessageDecoder 的优化，无需进行 ByteBuf.readableBytes() 的判断
+        提供泛型支持的状态管理， Void 或 Enum
+        实现：
+        数据不够抛出一个Error（Signle），重置 readerIndex 的位置，数据够则继续处理
+        限制：
+        1.某些Buffer的操作是被禁止的
+        2.网络很慢的情况下性能不是很好
+        3.你必须记住， decode(..)方法可以多次调用解码单个消息
+        
+    6、MessageToMessageDecoder[入站处理器] -> com.shadow.netty.chapter09.demo01.MyLongToStringDecoder
+        一种类型转换为另外一种类型
+        
+        
+    7、ChannelDuplexHandler、CombinedChannelDuplexHandler
+        编解码器结合的处理器
+    
+        
+    关于Netty编解码器的结论：
+    1.无论是编码器还是解码器，其所接收的消息类型必须要与待处理的参数类型一致，否则该编码器或解码器并不会被执行
+    2.在解码器进行数据解码时，一定要记得判断缓存（ByteBuf）中的数据是否够(ByteBuf.readableBytes())，否则将会产生一些问题
+        
+    
+### 3.Netty自带的编解码器及其作用
+    
+    1、HttpServerCodec（HttpRequestDecoder、HttpResponseEncoder）
+        HTTP 请求的编解码器，结合了 HttpResponseEncoder 编码器 与  HttpRequestDecoder 解码器   
+    
+    2、StringEncoder、StringDecoder
+        StringEncoder：字符串编码器
+        StringDecoder：字符串解码器
+    
+    3、LengthFieldBasedFrameDecoder、LengthFieldPrepender
+        LengthFieldBasedFrameDecoder：基于长度的解码器，指定了消息的长度
+        LengthFieldPrepender：预先设置消息长度的编码器
+    
+    4、FixedLengthFrameDecoder、LineBasedFrameDecoder
+        FixedLengthFrameDecoder：固定长度的解码器
+        LineBasedFrameDecoder：基于行的解码器
+        
+    5、DelimiterBasedFrameDecoder
+        基于分隔符的解码器
+    
+    6、IdleStateHandler
+        心跳检测，触发IdleStateEvent当Channel未进行读，写，或为同时兼具操作时
+    
+    7、ChunkedWriteHandler
+        基于块的处理器
+    
+    8、HttpObjectAggregator
+    
+    9、WebSocketServerProtocolHandler
+        websocket协议的处理器
+    
+    10、ProtobufVarint32FrameDecoder、ProtobufDecoder、ProtobufVarint32LengthFieldPrepender、ProtobufEncoder
+        Google Protocol Buffers 的编解码器
     
     
     
@@ -1298,8 +1710,10 @@ public class NIO12 {
     
     
     
+        
     
     
     
     
     
+       

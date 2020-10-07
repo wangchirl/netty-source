@@ -41,7 +41,7 @@ repositories {
 
 dependencies {
     compile (
-            "io.netty:netty-all:4.1.42.Final"
+            "io.netty:netty-all:4.1.15.Final"
     )
     compile 'com.google.protobuf:protobuf-java:3.11.0'
     compile 'com.google.protobuf:protobuf-java-util:3.11.0'
@@ -49,5 +49,7 @@ dependencies {
     implementation 'io.grpc:grpc-netty-shaded:1.32.1'
     implementation 'io.grpc:grpc-protobuf:1.32.1'
     implementation 'io.grpc:grpc-stub:1.32.1'
+    compile "org.slf4j:slf4j-api:1.7.10"
+    compile "org.slf4j:slf4j-log4j12:1.7.10"
 
 }
