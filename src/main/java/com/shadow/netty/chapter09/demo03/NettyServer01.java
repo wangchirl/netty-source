@@ -10,6 +10,10 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  * @author shadow
  * @create 2020-10-07
  * @description
+ *
+ * 解决粘包与拆包问题：
+ * 自定义协议 + 编、解码器
+ *
  */
 public class NettyServer01 {
 	public static void main(String[] args) {

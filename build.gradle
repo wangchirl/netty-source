@@ -51,5 +51,8 @@ dependencies {
     implementation 'io.grpc:grpc-stub:1.32.1'
     compile "org.slf4j:slf4j-api:1.7.10"
     compile "org.slf4j:slf4j-log4j12:1.7.10"
-
+    compile "org.apache.rocketmq:rocketmq-client:4.4.0"
+    compile "redis.clients:jedis:3.1.0"
+    compile "mysql:mysql-connector-java:8.0.18"
+    compile "org.mybatis:mybatis:3.5.3"
 }

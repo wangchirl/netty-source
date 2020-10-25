@@ -20,9 +20,7 @@ import io.netty.util.internal.SystemPropertyUtil;
  */
 public class NettyCore01 {
 	public static void main(String[] args) throws Exception{
-
-
-
+		t2();
 	}
 
 

@@ -1,3 +1,4 @@
+# 个人笔记整理 - Shadow
 ## Chapter01 - Netty简单使用
 ### 1.初识 Netty 服务端编码
 ```java
@@ -1693,7 +1694,7 @@ public class ByteBuf01 {
       AtomicIntegerFieldUpdater要点总结：
       1.更新器更新的必须是 int 类型变量，不能是其包装类 -> field.getType() != int.class
       2.新器更新的必须是 volatile类型的变量，确保线程之间对共享变量操作的可见性 -> Modifier.isVolatile(modifiers)
-      3.变量不能是static的，必须要说实例变量。因为Unsafe.objectFieldOffset()方法不支持静态变量（CAS操作本质上是通过对象实例的偏移量来进行赋值）
+      3.变量不能是static的，必须要是实例变量。因为Unsafe.objectFieldOffset()方法不支持静态变量（CAS操作本质上是通过对象实例的偏移量来进行赋值）
       4.更新器只能修改它可见范围内的变量，因为更新器是通过反射来得到这个变量的，如果变量不可见就会报错 
       
       如果要更新的变量是包装类型，那么可以使用 AtomicReferenceFieldUpdater 来进行更新
